@@ -2,8 +2,8 @@ import logging
 from datetime import datetime, timedelta
 import json
 import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup # type: ignore
+from telegram.ext import ( # type: ignore
     Application,
     CommandHandler,
     CallbackQueryHandler,
@@ -470,6 +470,34 @@ def main() -> None:
     
     # Add callback query handler for admin actions
     application.add_handler(CallbackQueryHandler(admin_action, pattern=r"^(approve|reject)_"))
+
+    
+import os
+import traceback
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+async def start(update, context):
+    await update.message.reply_text("Hello! I'm running.")
+
+async def error_handler(update, context: ContextTypes.DEFAULT_TYPE):
+    print("Exception while handling an update:")
+    traceback.print_exception(
+        type(context.error),
+        context.error,
+        context.error.__traceback__
+    )
+
+def main():
+    token = os.getenv("BOT_TOKEN")
+    application = ApplicationBuilder().token(token).build()
+
+    application.add_handler(CommandHandler("start", start))
+    application.add_error_handler(error_handler)  # ✅ REGISTER ERROR HANDLER
+
+    application.run_polling()
+
+if __name__ == "__main__":
+    main()
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling()
